@@ -3,28 +3,32 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 #function for parsing the number of games for a given league
-def parseNumGames(container, amount=0, results=[], i = 0, start = 0):
-	for i in range(len(container)):
+def parseNumGames(container):
+	i = 0
+	startCounting = False
+	amount = 0
+	results=[]
+	#keep looping until we've reached the end of html
+	while '</html>' not in container[i]:
+		#denotes we're at a league name, start counting number of games for that league
 		if 'a class="date-heading' in container[i]:
-			#we've found the start of league section
-			start = i+1
-			break
-	#loop until we reach the next scoreboard
-	while 'a class="date-head' not in container[i]:
-		print(container[i])
-		#each time we find this is a new game
-		if 'article class="scoreboard soccer' in container[i]:
-			amount+=1
-			print("amount updated %s" % amount)
-		#if we reach end of blob
-		if '</html>' in container[i]:
-			results.append(amount)	
-			return results;
+			#only need to set for true for being able to tally for the first result
+			startCounting = True
+		#move to next line
 		i+=1
+		#look for games if we're in a league section
+		if startCounting == True:
+			#if there's a game increment for that league
+			if 'article class="scoreboard soccer' in container[i]:
+				amount+=1
+		#if next line is a league heading and we're already searching, need to add the amount
+		#of games for the previous league and reset counting
+		#dont need to do this for first time through a league so startCounting is necesarry
+		if 'a class="date-heading' in container[i] and startCounting == True:
+			results.append(amount)
+			amount = 0
+	#need to add results of the final league to list
 	results.append(amount)
-	amount = 0		
-	if i < len(container):
-		results = parseNumGames(container, amount, results, i, start)
 	return results;	
 
 
@@ -38,13 +42,6 @@ def parseSoup(soup):
 	soup = soup.prettify()
 	#splits each line into a list, can now find how many games between two given hrefs
 	content = soup.split('\n')
-	""" 
-	debugging purposes
-	the_file = open("output.txt", 'w')
-	for item in content:
-		the_file.write("%s \n" % item)
-	the_file.close()
-	"""
 	return content;
 	
 options = Options()
@@ -67,7 +64,7 @@ soup = BeautifulSoup(scoreBoard.get_attribute("innerHTML"), "lxml")
 soup = parseSoup(soup)
 gamesPerLeague = parseNumGames(soup)
 for i in gamesPerLeague:
-	print(gamesPerLeague[i])
+	print(i)
 #gets team logos
 pictures = driver.find_elements_by_xpath("//div[@class='logo']//img[@src]")
 #below adds those items to lists
