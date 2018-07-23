@@ -45,10 +45,10 @@ def parseSoup(soup):
 	content = soup.split('\n')
 	return content;
 """
-function provides the URLS needed for scraping program
-amount of days to scrape will be provided in command line
-takes current date then generates url for each day going back to n number of days
-"http://espn.com/soccer/scoreboard/_/league/all/date/YYYYMMDD
+	NOTE: function provides the URLS needed for scraping functions
+	amount of days to scrape will be provided in command line
+	takes current date then generates url for each day going back to n number of days
+	"http://espn.com/soccer/scoreboard/_/league/all/date/YYYYMMDD
 """
 def getDate(offset):
 	#gets current time
@@ -82,7 +82,7 @@ def init():
 	return driver
 
 def dataForDays(url, driver):	
-	#gets score page, will be scaled for all pages in the future, hardcoded for now
+	#gets score page
 	driver.get(url)
 	#gets names of teams
 	nameContainer = driver.find_elements_by_class_name("short-name")
@@ -113,9 +113,9 @@ def dataForDays(url, driver):
 
 def main():
 	serverData = []
-
-	if sys.argv[1] == None:
-		print("Value not provided for amount to parse")
+	#argv will always have script as first element, if that's the only item then nothing has been provided for scraping
+	if len(sys.argv) == 1:
+		print("Value not provided for amount to parse, exiting.")
 		return;
 	else: 
 		urls = daysToParse(sys.argv[1])
